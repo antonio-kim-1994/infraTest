@@ -1,0 +1,30 @@
+Vagrant.configure("2") do |config|
+  config.vbguest.auto_update = true
+  config.vbguest.installer_options = { allow_kernel_upgrade: true }
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 4
+    vb.memory = 4096
+  end
+
+  config.vm.define "dockertest" do |cfg|
+    cfg.vm.box = "cent79box"
+    cfg.vm.provider "virtualbox" do |vb|
+      vb.name = "dockertest"
+    end
+    cfg.vm.network "private_network", ip: "192.168.1.41"
+    cfg.vm.network "forwarded_port", guest: 22, host: 60041, auto_correct: true, id: "ssh"
+
+    cfg.vm.provision "shell", privileged: true, inline: <<-'SHELL'
+      rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+      yum update -y
+      yum install git wget net-tools python3 -y
+      pip3 install -U pip
+      systemctl disable firewalld
+      sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' /etc/selinux/config
+      sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config    
+      systemctl restart sshd.service
+      reboot
+    SHELL
+  end  
+end
