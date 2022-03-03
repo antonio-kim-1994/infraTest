@@ -1,0 +1,39 @@
+version: '3.3'
+
+services:
+
+  redmine:
+    container_name: plf-redmine
+    image: redmine
+    restart: always
+    ports:
+      - 80:3000
+    environment:
+      REDMINE_DB_POSTGRES: postgres
+      REDMINE_DB_USERNAME: redmine
+      REDMINE_DB_PASSWORD: t3q9327!@
+      REDMINE_DB_DATABASE: redmine
+    volumes:
+     - /redmine/data:/usr/src/redmine/files
+     - /redmine/plugins:/usr/src/redmine/plugins
+     - /redmine/themes:/usr/src/redmine/public/themes
+
+  postgres:
+    container_name: redmine-postgreSQL
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_USER: redmine
+      POSTGRES_PASSWORD: t3q9327!@
+      POSTGRES_DB: redmine
+    volumes:
+     - /app/dockerpostgres:/var/lib/postgresql/data
+    ports:
+     - "5432:5432"
+
+  adminer:
+    container_name: adminer
+    image: adminer
+    restart: always
+    ports:
+     - 18080:8080
